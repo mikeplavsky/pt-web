@@ -14,14 +14,10 @@ import qualified Control.Monad as M
 import Data.DateTime
 import System.Environment
 
-pt_tk = getEnv "PT_TOKEN"
+pt_token = getEnv "PT_TOKEN"
+pt_id = getEnv "PT_PROJECT_ID"
 
 pt_url = "https://www.pivotaltracker.com/services/v5/projects"
-
-pt_stories = do 
-    pt_project_id <- getEnv "PT_PROJECT_ID"
-    return $ stories_url pt_project_id
-
 stories_url id = pt_url ++ "/" ++ id ++ "/iterations?offset=" 
 
 pt_start_date = do 
@@ -36,17 +32,17 @@ print_burndown = do
 
     rn <- pt_release_name
     sd <- pt_start_date
+    id <- pt_id
 
-    (t,b) <- get_burndown sd rn 
+    (t,b) <- get_burndown id sd rn 
 
     putStrLn $ "Total: " ++ show t
     mapM_ (\(x,y) -> 
         putStrLn $ show x ++ "\t" ++ show y) b
 
-get_burndown start_date release_name = do
+get_burndown id start_date release_name = do
 
-    tk <- pt_tk
-    its <- get_all_iterations $ C.pack tk    
+    its <- get_all_iterations id
 
     let finish_d = find_finish_date release_name its
         f_its = release_iterations its start_date finish_d 
@@ -70,35 +66,35 @@ data Iteration = Iteration {
 
 instance FromJSON Iteration
 
-get_raw tk offset = do
+get_raw id offset = do
 
-    let opts = defaults & header "X-TrackerToken" .~ [tk]
+    tk <- pt_token
 
-    stories <- pt_stories      
-    getWith opts $ stories ++ (show offset)
+    let opts = defaults & header "X-TrackerToken" .~ [C.pack tk]
+    getWith opts $ stories_url id ++ (show offset)
 
 get_iterations s = 
     let d = s ^. responseBody
     in decode d :: Maybe [Iteration]
 
-get_all :: S.ByteString -> Int -> [[Iteration]] -> IO [[Iteration]]
-get_all tk offset its = do
+get_all :: [Char] -> Int -> [[Iteration]] -> IO [[Iteration]]
+get_all id offset its = do
 
-    s <- get_raw tk offset 
+    s <- get_raw id offset 
     let i = fromJust $ get_iterations s 
 
     putStrLn $ show offset
 
     if i == []
       then return its 
-      else get_all tk (offset + 10) (i:its)
+      else get_all id (offset + 10) (i:its)
 
-get_project :: S.ByteString -> IO [[Iteration]]
-get_project tk = get_all tk 0 []
+get_project :: [Char] -> IO [[Iteration]]
+get_project id = get_all id 0 []
 
-get_all_iterations tk = do 
+get_all_iterations id = do 
 
-    its <- get_project tk 
+    its <- get_project id 
 
     let s = L.reverse its
     return $ M.join s 
