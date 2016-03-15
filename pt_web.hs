@@ -20,7 +20,9 @@ pt_url = "https://www.pivotaltracker.com/services/v5/projects"
 
 pt_stories = do 
     pt_project_id <- getEnv "PT_PROJECT_ID"
-    return $ pt_url ++ "/" ++ pt_project_id ++ "/iterations?offset=" 
+    return $ stories_url pt_project_id
+
+stories_url id = pt_url ++ "/" ++ id ++ "/iterations?offset=" 
 
 pt_start_date = do 
     d <- getEnv "PT_START_DATE"
