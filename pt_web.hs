@@ -15,7 +15,7 @@ import Data.DateTime
 import System.Environment
 
 pt_token = getEnv "PT_TOKEN"
-pt_id = getEnv "PT_PROJECT_ID"
+pt_id = getEnv "PT_PROJECT_IDS"
 
 pt_url = "https://www.pivotaltracker.com/services/v5/projects"
 stories_url id = pt_url ++ "/" ++ id ++ "/iterations?offset=" 
@@ -26,13 +26,23 @@ pt_start_date = do
  
 pt_release_name = getEnv "PT_RELEASE_NAME"
 
-main = print_burndown
+main = burndowns 
 
-print_burndown = do
+burndowns = do
+
+    r_ids <- pt_id
+
+    let ids' = split (==',') $ pack r_ids
+    let ids = L.map unpack ids'
+
+    mapM_ print_burndown ids
+
+print_burndown id = do
+
+    putStrLn $ "Project: " ++ id
 
     rn <- pt_release_name
     sd <- pt_start_date
-    id <- pt_id
 
     (t,b) <- get_burndown id sd rn 
 
