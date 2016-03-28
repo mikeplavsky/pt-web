@@ -6,7 +6,8 @@ Needed environment:
 - PT_START_DATE
 - PT_RELEASE_NAME
 
-PT_PROJECT_IDS="ID1,ID2"
+PT_PROJECT_IDS is the list of comma-separated IDs = "ID1,ID2"
+
 PT_START_DATE is in format `"%Y-%m-%dT%H:%M:%SZ"`
 `2015-12-04T21:00:00Z`
 
