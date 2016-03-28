@@ -8,4 +8,4 @@ NAME="pt_web.v"$VERSION".zip"
 
 strip pt_web
 zip -r $NAME pt_web
-aws s3 cp pt_web "s3://pt-spb/"$NAME
+aws s3 cp $NAME "s3://pt-spb/"$NAME
