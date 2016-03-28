@@ -26,9 +26,7 @@ pt_start_date = do
  
 pt_release_name = getEnv "PT_RELEASE_NAME"
 
-main = burndowns 
-
-burndowns = do
+main = do
 
     r_ids <- pt_id
 
